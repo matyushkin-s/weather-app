@@ -112,6 +112,7 @@ function handleModeChange(mode: ForecastMode): void {
           {{ isBlockFavorite ? '★' : '☆' }}
         </button>
         <button
+          v-if="!props.disableFavoriteToggle"
           class="icon-button"
           type="button"
           :title="t('refresh')"

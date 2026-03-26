@@ -65,10 +65,6 @@ function handleModeChange(nextMode: 'day' | 'week'): void {
       </div>
 
       <div v-if="hasFavorites" class="favorites-controls">
-        <button class="button button-secondary" type="button" :disabled="isLoading" @click="handleReload">
-          {{ t('refresh') }}
-        </button>
-
         <div class="segmented-control" role="tablist" :aria-label="t('feelsLike')">
           <button
             class="segmented-item"
