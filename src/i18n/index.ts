@@ -93,6 +93,14 @@ const messagesByKey = {
     en: 'Remove from favorites',
     uk: 'Видалити з обраного',
   },
+  favoriteRemoveTitle: {
+    en: 'Remove favorite city?',
+    uk: 'Видалити місто з обраного?',
+  },
+  favoriteRemoveText: {
+    en: 'This city will be removed from your favorites list.',
+    uk: 'Це місто буде видалене зі списку обраного.',
+  },
   deleteBlock: {
     en: 'Delete widget',
     uk: 'Видалити віджет',

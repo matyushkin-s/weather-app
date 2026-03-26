@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 
 import { usePreferences } from '@/composables/usePreferences'
 import { useWeatherDashboard } from '@/composables/useWeatherDashboard'
-import type { AppLocale, AppTheme, WeatherBlockState } from '@/types/weather'
+import type { AppLocale, AppTheme, ForecastMode, WeatherBlockState } from '@/types/weather'
 import { buildCityLabel, formatUpdatedAt, formatWind, getModePoints, getWeatherIconUrl } from '@/utils/weather'
 
 import CityAutocomplete from './CityAutocomplete.vue'
@@ -16,6 +16,15 @@ const props = defineProps<{
   locale: AppLocale
   theme: AppTheme
   canDelete: boolean
+  disableSearch?: boolean
+  disableFavoriteToggle?: boolean
+  onDelete?: (() => void) | null
+  forcedMode?: ForecastMode | null
+}>()
+
+const emit = defineEmits<{
+  modeChange: [mode: ForecastMode]
+  refresh: [location: NonNullable<WeatherBlockState['location']>]
 }>()
 
 const { toggleFavorite, isFavorite } = usePreferences()
@@ -33,12 +42,14 @@ const isBlockFavorite = computed(() => {
   return isFavorite(props.block.location)
 })
 
+const activeMode = computed<ForecastMode>(() => props.forcedMode ?? props.block.mode)
+
 const points = computed(() => {
   if (!props.block.weather) {
     return []
   }
 
-  return getModePoints(props.block.weather, props.block.mode)
+  return getModePoints(props.block.weather, activeMode.value)
 })
 
 async function handleSelectedLocation(location: NonNullable<WeatherBlockState['location']>): Promise<void> {
@@ -57,7 +68,12 @@ function handleFavoriteToggle(): void {
 }
 
 function confirmDelete(): void {
-  removeBlock(props.block.id)
+  if (props.onDelete) {
+    props.onDelete()
+  } else {
+    removeBlock(props.block.id)
+  }
+
   deleteModalOpen.value = false
 }
 
@@ -68,6 +84,15 @@ async function refreshBlock(): Promise<void> {
 
   await loadWeatherForBlock(props.block.id, props.block.location, props.locale)
 }
+
+function handleModeChange(mode: ForecastMode): void {
+  if (props.forcedMode) {
+    emit('modeChange', mode)
+    return
+  }
+
+  setMode(props.block.id, mode)
+}
 </script>
 
 <template>
@@ -76,6 +101,7 @@ async function refreshBlock(): Promise<void> {
       <span class="widget-badge">{{ t('widget') }}</span>
       <div class="widget-actions-inline">
         <button
+          v-if="!props.disableFavoriteToggle"
           class="icon-button"
           type="button"
           :aria-pressed="isBlockFavorite"
@@ -98,8 +124,8 @@ async function refreshBlock(): Promise<void> {
           class="icon-button"
           type="button"
           :disabled="!props.canDelete"
-          :title="props.canDelete ? t('deleteBlock') : t('cannotDeleteLast')"
-          @click="deleteModalOpen = true"
+          :title="props.canDelete ? (props.onDelete ? t('favoriteRemove') : t('deleteBlock')) : t('cannotDeleteLast')"
+          @click="props.onDelete ? props.onDelete() : (deleteModalOpen = true)"
         >
           ✕
         </button>
@@ -107,6 +133,7 @@ async function refreshBlock(): Promise<void> {
     </div>
 
     <CityAutocomplete
+      v-if="!props.disableSearch"
       :locale="props.locale"
       :disabled="props.block.isLoading"
       :selected-location="props.block.location"
@@ -163,17 +190,17 @@ async function refreshBlock(): Promise<void> {
         <div class="segmented-control" role="tablist" :aria-label="t('feelsLike')">
           <button
             class="segmented-item"
-            :class="{ 'segmented-item-active': props.block.mode === 'day' }"
+            :class="{ 'segmented-item-active': activeMode === 'day' }"
             type="button"
-            @click="setMode(props.block.id, 'day')"
+            @click="handleModeChange('day')"
           >
             {{ t('day') }}
           </button>
           <button
             class="segmented-item"
-            :class="{ 'segmented-item-active': props.block.mode === 'week' }"
+            :class="{ 'segmented-item-active': activeMode === 'week' }"
             type="button"
-            @click="setMode(props.block.id, 'week')"
+            @click="handleModeChange('week')"
           >
             {{ t('week') }}
           </button>
@@ -184,7 +211,7 @@ async function refreshBlock(): Promise<void> {
         :locale="props.locale"
         :theme="props.theme"
         :points="points"
-        :mode="props.block.mode"
+        :mode="activeMode"
       />
     </div>
 
@@ -193,6 +220,7 @@ async function refreshBlock(): Promise<void> {
     </div>
 
     <ConfirmModal
+      v-if="!props.onDelete"
       :open="deleteModalOpen"
       :title="t('confirmDeleteTitle')"
       :description="t('confirmDeleteText')"

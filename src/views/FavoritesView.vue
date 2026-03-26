@@ -1,14 +1,59 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import TemperatureChart from '@/components/TemperatureChart.vue'
+import ConfirmModal from '@/components/ConfirmModal.vue'
+import WeatherWidget from '@/components/WeatherWidget.vue'
 import { useFavoriteWeather } from '@/composables/useFavoriteWeather'
 import { usePreferences } from '@/composables/usePreferences'
-import { buildCityLabel, formatUpdatedAt, formatWind, getModePoints, getWeatherIconUrl } from '@/utils/weather'
+import type { CityLocation, WeatherBlockState } from '@/types/weather'
+import { getLocationKey } from '@/utils/weather'
 
 const { favorites, locale, theme, removeFavorite } = usePreferences()
-const { items, isLoading, mode, hasFavorites } = useFavoriteWeather(favorites, locale)
+const { items, isLoading, mode, hasFavorites, reload, reloadLocation } = useFavoriteWeather(favorites, locale)
 const { t } = useI18n()
+
+const pendingRemoval = ref<CityLocation | null>(null)
+
+const favoriteBlocks = computed<WeatherBlockState[]>(() =>
+  items.value.map((item) => ({
+    id: `favorite-${getLocationKey(item.location)}`,
+    location: item.location,
+    weather: item.weather,
+    isLoading: isLoading.value,
+    error: item.error,
+    mode: mode.value,
+  })),
+)
+
+function requestRemoveFavorite(location: CityLocation): void {
+  pendingRemoval.value = location
+}
+
+function cancelRemoveFavorite(): void {
+  pendingRemoval.value = null
+}
+
+function confirmRemoveFavorite(): void {
+  if (pendingRemoval.value) {
+    removeFavorite(pendingRemoval.value)
+  }
+
+  pendingRemoval.value = null
+}
+
+async function handleReload(location?: CityLocation): Promise<void> {
+  if (location) {
+    await reloadLocation(location)
+    return
+  }
+
+  await reload()
+}
+
+function handleModeChange(nextMode: 'day' | 'week'): void {
+  mode.value = nextMode
+}
 </script>
 
 <template>
@@ -19,27 +64,33 @@ const { t } = useI18n()
         <p class="favorites-description">{{ t('favoritesSubtitle') }}</p>
       </div>
 
-      <div v-if="hasFavorites" class="segmented-control" role="tablist" :aria-label="t('feelsLike')">
-        <button
-          class="segmented-item"
-          :class="{ 'segmented-item-active': mode === 'day' }"
-          type="button"
-          @click="mode = 'day'"
-        >
-          {{ t('day') }}
+      <div v-if="hasFavorites" class="favorites-controls">
+        <button class="button button-secondary" type="button" :disabled="isLoading" @click="handleReload">
+          {{ t('refresh') }}
         </button>
-        <button
-          class="segmented-item"
-          :class="{ 'segmented-item-active': mode === 'week' }"
-          type="button"
-          @click="mode = 'week'"
-        >
-          {{ t('week') }}
-        </button>
+
+        <div class="segmented-control" role="tablist" :aria-label="t('feelsLike')">
+          <button
+            class="segmented-item"
+            :class="{ 'segmented-item-active': mode === 'day' }"
+            type="button"
+            @click="mode = 'day'"
+          >
+            {{ t('day') }}
+          </button>
+          <button
+            class="segmented-item"
+            :class="{ 'segmented-item-active': mode === 'week' }"
+            type="button"
+            @click="mode = 'week'"
+          >
+            {{ t('week') }}
+          </button>
+        </div>
       </div>
     </header>
 
-    <div v-if="isLoading" class="favorites-state">
+    <div v-if="isLoading && !favoriteBlocks.length" class="favorites-state">
       <div class="loader"></div>
       <p>{{ t('loading') }}</p>
     </div>
@@ -49,60 +100,32 @@ const { t } = useI18n()
     </div>
 
     <div v-else class="favorites-grid">
-      <article v-for="item in items" :key="`${item.location.lat}-${item.location.lon}`" class="favorite-card">
-        <div class="favorite-actions">
-          <span class="widget-badge">★ {{ t('favoritesTab') }}</span>
-          <button class="icon-button" type="button" :title="t('favoriteRemove')" @click="removeFavorite(item.location)">
-            ✕
-          </button>
-        </div>
-
-        <div v-if="item.error" class="favorites-state error-state">
-          <p>{{ item.error }}</p>
-        </div>
-
-        <template v-else-if="item.weather">
-          <section class="summary-row">
-            <div>
-              <p class="eyebrow">{{ t('currentConditions') }}</p>
-              <h3 class="location-title">{{ buildCityLabel(item.weather.location) }}</h3>
-              <p class="weather-description">{{ item.weather.current.description }}</p>
-              <p class="update-text">
-                {{ t('updatedAt') }}:
-                {{ formatUpdatedAt(item.weather.current.timestamp, item.weather.timezoneOffset, locale) }}
-              </p>
-            </div>
-
-            <div class="weather-temp-shell">
-              <img
-                class="weather-icon"
-                :src="getWeatherIconUrl(item.weather.current.icon)"
-                :alt="item.weather.current.description"
-              />
-              <strong class="temperature">{{ item.weather.current.temperature }}°C</strong>
-            </div>
-          </section>
-
-          <section class="metrics-grid">
-            <div class="metric-card">
-              <span class="metric-label">{{ t('humidity') }}</span>
-              <strong class="metric-value">{{ item.weather.current.humidity }}%</strong>
-            </div>
-            <div class="metric-card">
-              <span class="metric-label">{{ t('wind') }}</span>
-              <strong class="metric-value">{{ formatWind(item.weather.current.windSpeed, locale) }}</strong>
-            </div>
-          </section>
-
-          <TemperatureChart
-            :locale="locale"
-            :theme="theme"
-            :points="getModePoints(item.weather, mode)"
-            :mode="mode"
-          />
-        </template>
-      </article>
+      <WeatherWidget
+        v-for="block in favoriteBlocks"
+        :key="block.id"
+        :block="block"
+        :locale="locale"
+        :theme="theme"
+        :can-delete="true"
+        :disable-search="true"
+        :disable-favorite-toggle="true"
+        :on-delete="block.location ? () => requestRemoveFavorite(block.location) : null"
+        :forced-mode="mode"
+        @mode-change="handleModeChange"
+        @refresh="handleReload"
+      />
     </div>
+
+    <ConfirmModal
+      :open="Boolean(pendingRemoval)"
+      :title="t('favoriteRemoveTitle')"
+      :description="t('favoriteRemoveText')"
+      :confirm-label="t('confirm')"
+      :cancel-label="t('cancel')"
+      tone="danger"
+      @confirm="confirmRemoveFavorite"
+      @cancel="cancelRemoveFavorite"
+    />
   </section>
 </template>
 
@@ -112,26 +135,16 @@ const { t } = useI18n()
   gap: 1.25rem;
 }
 
-.favorites-header,
-.favorite-actions,
-.summary-row,
-.weather-temp-shell {
-  display: flex;
+.favorites-controls {
+  display: grid;
+  gap: 0.75rem;
 }
 
-.favorites-header,
-.favorite-actions,
-.summary-row {
+.favorites-header {
+  display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 1rem;
-}
-
-.favorite-actions {
-  width: 100%;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
 }
 
 .favorites-title {
@@ -140,48 +153,13 @@ const { t } = useI18n()
   color: var(--color-heading);
 }
 
-.favorites-description,
-.eyebrow,
-.weather-description,
-.update-text,
-.metric-label {
+.favorites-description {
   color: var(--color-text-soft);
 }
 
 .favorites-grid {
   display: grid;
   gap: 1rem;
-}
-
-.favorite-card {
-  display: grid;
-  gap: 1rem;
-  border-radius: 28px;
-  border: 1px solid var(--color-border);
-  background: var(--surface-color);
-  padding: 1.25rem;
-  box-shadow: var(--shadow-md);
-}
-
-.summary-row {
-  align-items: flex-start;
-}
-
-.location-title {
-  font-size: clamp(1.3rem, 2vw, 1.75rem);
-  font-weight: 700;
-  color: var(--color-heading);
-}
-
-.weather-icon {
-  width: 72px;
-  height: 72px;
-}
-
-.temperature {
-  font-size: clamp(1.8rem, 3vw, 2.8rem);
-  line-height: 1;
-  color: var(--color-heading);
 }
 
 .favorites-state {
@@ -196,20 +174,17 @@ const { t } = useI18n()
   text-align: center;
 }
 
-.error-state {
-  color: var(--danger-color);
-}
-
 @media (min-width: 720px) {
-  .favorites-header,
-  .summary-row {
+  .favorites-header {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
   }
 
-  .metrics-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .favorites-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
   }
 }
 </style>
