@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { debounce } from 'lodash'
+import {computed, onBeforeUnmount, ref, useId, watch} from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { searchCities, toWeatherError } from '@/services/weatherService'
@@ -16,6 +17,7 @@ const emit = defineEmits<{
   select: [location: CityLocation]
 }>()
 
+const inputId = useId();
 const query = ref(props.selectedLocation ? buildCityLabel(props.selectedLocation) : '')
 const suggestions = ref<CityLocation[]>([])
 const isLoading = ref(false)
@@ -25,7 +27,30 @@ const skipNextSearch = ref(false)
 let requestId = 0
 const { t } = useI18n()
 
-let debounceTimer: ReturnType<typeof setTimeout> | null = null
+async function fetchSuggestions(value: string): Promise<void> {
+  const currentRequestId = ++requestId
+  isLoading.value = true
+  isOpen.value = true
+  error.value = null
+
+  try {
+    const result = await searchCities(value, props.locale)
+    if (currentRequestId !== requestId) return
+
+    suggestions.value = result
+  } catch (searchError) {
+    if (currentRequestId !== requestId) return
+
+    suggestions.value = []
+    error.value = toWeatherError(searchError, props.locale)
+  } finally {
+    if (currentRequestId === requestId) {
+      isLoading.value = false
+    }
+  }
+}
+
+const debouncedFetch = debounce(fetchSuggestions, 400)
 
 watch(
   () => props.selectedLocation,
@@ -40,11 +65,10 @@ watch(query, (value) => {
     return
   }
 
-  if (debounceTimer) {
-    clearTimeout(debounceTimer)
-  }
+  const normalizedQuery = value.trim()
 
-  if (!value.trim()) {
+  if (!normalizedQuery || normalizedQuery.length < 3) {
+    debouncedFetch.cancel()
     requestId += 1
     suggestions.value = []
     error.value = null
@@ -53,38 +77,11 @@ watch(query, (value) => {
     return
   }
 
-  debounceTimer = setTimeout(async () => {
-    const currentRequestId = ++requestId
-    isLoading.value = true
-    error.value = null
-
-    try {
-      const result = await searchCities(value, props.locale)
-      if (currentRequestId !== requestId) {
-        return
-      }
-
-      suggestions.value = result
-      isOpen.value = true
-    } catch (searchError) {
-      if (currentRequestId !== requestId) {
-        return
-      }
-
-      suggestions.value = []
-      error.value = toWeatherError(searchError, props.locale)
-    } finally {
-      if (currentRequestId === requestId) {
-        isLoading.value = false
-      }
-    }
-  }, 400)
+  debouncedFetch(normalizedQuery)
 })
 
 onBeforeUnmount(() => {
-  if (debounceTimer) {
-    clearTimeout(debounceTimer)
-  }
+  debouncedFetch.cancel()
 })
 
 function handleSelect(location: CityLocation): void {
@@ -114,15 +111,26 @@ function handleEnter(): void {
   }
 }
 
+function clearInput(id: string): void {
+  debouncedFetch.cancel()
+  requestId += 1
+  query.value = ''
+  suggestions.value = []
+  error.value = null
+  isLoading.value = false
+  isOpen.value = false
+  document.getElementById(id)?.focus()
+}
+
 const shouldShowDropdown = computed(() => isOpen.value && (isLoading.value || suggestions.value.length > 0 || Boolean(error.value)))
 </script>
 
 <template>
   <div class="autocomplete">
-    <label class="field-label" for="city-search">{{ t('searchPlaceholder') }}</label>
+    <label class="field-label" :for="inputId">{{ t('searchPlaceholder') }}</label>
     <div class="search-shell">
       <input
-        id="city-search"
+        :id="inputId"
         v-model="query"
         class="search-input"
         type="text"
@@ -133,13 +141,25 @@ const shouldShowDropdown = computed(() => isOpen.value && (isLoading.value || su
         @blur="handleBlur"
         @keydown.enter.prevent="handleEnter"
       />
-      <span v-if="isLoading" class="search-status">{{ t('loading') }}</span>
+      <button
+        v-if="query && !props.disabled"
+        class="clear-button"
+        type="button"
+        :aria-label="t('cancel')"
+        :title="t('cancel')"
+        @click="clearInput(inputId)"
+      >
+        ×
+      </button>
     </div>
-    <p class="field-hint">{{ t('searchHint') }}</p>
+    <p class="field-hint" :class="{'field-hint--transparent': query}">{{ t('searchHint') }}</p>
 
     <transition name="fade-slide">
       <ul v-if="shouldShowDropdown" class="suggestions" role="listbox">
-        <li v-if="error" class="suggestion suggestion-error">{{ error }}</li>
+        <li v-if="isLoading" class="suggestion suggestion-loading">
+          <span class="inline-loader" aria-hidden="true"></span>
+        </li>
+        <li v-else-if="error" class="suggestion suggestion-error">{{ error }}</li>
         <li v-else-if="!isLoading && suggestions.length === 0" class="suggestion suggestion-empty">
           {{ t('noResults') }}
         </li>
@@ -173,7 +193,7 @@ const shouldShowDropdown = computed(() => isOpen.value && (isLoading.value || su
   border: 1px solid var(--color-border);
   background: var(--input-background);
   color: var(--color-text);
-  padding: 0.875rem 1rem;
+  padding: 0.875rem 2.8rem 0.875rem 1rem;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -183,17 +203,30 @@ const shouldShowDropdown = computed(() => isOpen.value && (isLoading.value || su
   box-shadow: 0 0 0 4px var(--accent-soft);
 }
 
-.search-status {
+.clear-button {
   position: absolute;
   top: 50%;
   right: 1rem;
   transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
   color: var(--color-text-soft);
-  font-size: 0.85rem;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.clear-button:hover,
+.clear-button:focus-visible {
+  background: var(--accent-soft);
 }
 
 .suggestions {
   position: absolute;
+  top: 72%;
   z-index: 15;
   width: 100%;
   margin-top: 0.5rem;
@@ -229,6 +262,27 @@ const shouldShowDropdown = computed(() => isOpen.value && (isLoading.value || su
 .suggestion-empty {
   cursor: default;
   color: var(--color-text-soft);
+}
+
+.suggestion-loading {
+  display: grid;
+  place-items: center;
+  padding: 0.75rem;
+}
+
+.inline-loader {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--accent-soft);
+  border-top-color: var(--accent-color);
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .fade-slide-enter-active,

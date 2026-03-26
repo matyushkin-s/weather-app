@@ -69,6 +69,10 @@
   font-size: 0.85rem;
 }
 
+.field-hint.field-hint--transparent {
+  color: transparent;
+}
+
 .segmented-control {
   display: inline-flex;
   gap: 4px;
@@ -126,6 +130,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .metric-card {

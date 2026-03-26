@@ -1,6 +1,6 @@
 :root {
   --color-background: #f3f7ff;
-  --surface-color: rgba(255, 255, 255, 0.78);
+  --surface-color: rgba(255, 255, 255, 0.92);
   --surface-muted: rgba(255, 255, 255, 0.5);
   --input-background: rgba(255, 255, 255, 0.92);
   --color-border: rgba(18, 48, 92, 0.12);
@@ -19,7 +19,7 @@
 
 :root[data-theme='dark'] {
   --color-background: #08111f;
-  --surface-color: rgba(13, 22, 38, 0.86);
+  --surface-color: rgba(13, 22, 38, 0.92);
   --surface-muted: rgba(20, 32, 52, 0.78);
   --input-background: rgba(10, 20, 35, 0.92);
   --color-border: rgba(160, 188, 227, 0.16);

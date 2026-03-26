@@ -80,6 +80,7 @@ async function refreshBlock(): Promise<void> {
           type="button"
           :aria-pressed="isBlockFavorite"
           :title="isBlockFavorite ? t('favoriteRemove') : t('favoriteAdd')"
+          :disabled="!props.block.location"
           @click="handleFavoriteToggle"
         >
           {{ isBlockFavorite ? '★' : '☆' }}
@@ -88,6 +89,7 @@ async function refreshBlock(): Promise<void> {
           class="icon-button"
           type="button"
           :title="t('refresh')"
+          :disabled="!props.block.location"
           @click="refreshBlock"
         >
           ↻
@@ -280,7 +282,7 @@ async function refreshBlock(): Promise<void> {
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .state-card {
