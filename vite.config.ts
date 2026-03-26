@@ -5,15 +5,20 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
-export default defineConfig({
-  base: "/weather-app/",
-  plugins: [
-    vue(),
-    vueDevTools(),
-  ],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+export default defineConfig(({ command }) => {
+  const repositoryName = process.env.GITHUB_REPOSITORY?.split('/')[1] ?? 'weather-app'
+  const configuredBase = process.env.VITE_BASE_PATH ?? `/${repositoryName}/`
+
+  return {
+    base: command === 'build' ? configuredBase : '/',
+    plugins: [
+      vue(),
+      vueDevTools(),
+    ],
+    resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url))
+      },
     },
-  },
+  }
 })

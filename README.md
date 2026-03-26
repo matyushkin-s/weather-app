@@ -1,53 +1,48 @@
 # weather-app
-Small weather test application
 
-This template should help get you started developing with Vue 3 in Vite.
+Vue 3 + TypeScript weather application powered by the OpenWeather API.
 
-## Recommended IDE Setup
+## Features
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- City search with autocomplete
+- Multiple independent weather widgets
+- Favorites stored in localStorage
+- Day / 5-day temperature charts with Chart.js
+- EN / UK interface toggle
+- Light / dark theme toggle
+- Auto deploy to GitHub Pages on push to `main`
 
-## Recommended Browser Setup
+## Environment
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-    - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-    - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-    - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-    - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+Create `.env` from `.env.example` and set your API key:
 
-## Type Support for `.vue` Imports in TS
+```dotenv
+VITE_WEATHER_API_KEY=your_api_key
+```
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
+## Local development
 
 ```sh
 npm install
-```
-
-### Link on GitHub Pages
-
-`https://matyushkin-s.github.io/weather-app/`
-
-### Compile and Hot-Reload for Development
-
-```sh
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+## Production build
 
 ```sh
 npm run build
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+## Lint
 
 ```sh
 npm run lint
 ```
+
+## GitHub Pages
+
+Deployment runs automatically after every push to `main` through GitHub Actions.
+
+Project URL:
+
+`https://matyushkin-s.github.io/weather-app/`
