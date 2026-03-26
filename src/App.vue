@@ -9,7 +9,7 @@ const { locale, theme, toggleTheme } = usePreferences()
 </script>
 
 <template>
-  <div class="app-shell">
+  <div class="app-shell weather-app">
     <header class="app-header">
       <div class="hero-copy">
         <p class="hero-badge">OpenWeather + Vue 3</p>
@@ -69,12 +69,12 @@ const { locale, theme, toggleTheme } = usePreferences()
 
 .app-header,
 .toolbar-grid {
-  justify-content: space-between;
   gap: 1rem;
 }
 
 .app-header {
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: stretch;
   padding: 1.5rem;
   border-radius: 32px;
   border: 1px solid var(--color-border);
@@ -108,7 +108,7 @@ const { locale, theme, toggleTheme } = usePreferences()
 
 .toolbar-grid,
 .toolbar-actions {
-  align-items: center;
+  align-items: stretch;
 }
 
 .toolbar-grid {
@@ -117,7 +117,13 @@ const { locale, theme, toggleTheme } = usePreferences()
 
 .toolbar-actions,
 .main-nav {
+  flex-direction: column;
   gap: 0.75rem;
+}
+
+.toolbar-actions .button,
+.main-nav .nav-link {
+  width: 100%;
 }
 
 .nav-link {
@@ -128,7 +134,7 @@ const { locale, theme, toggleTheme } = usePreferences()
   padding: 0.75rem 1rem;
   border-radius: 999px;
   color: var(--color-heading);
-  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--surface-color);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -142,6 +148,8 @@ const { locale, theme, toggleTheme } = usePreferences()
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
+
+
 
 .notice-card {
   border-radius: 20px;
@@ -158,27 +166,32 @@ const { locale, theme, toggleTheme } = usePreferences()
   min-height: 55vh;
 }
 
-@media (max-width: 900px) {
-  .app-header,
-  .toolbar-grid,
+@media (min-width: 900px) {
   .toolbar-actions {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: center;
   }
 
   .main-nav {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .toolbar-actions .button,
+  .main-nav .nav-link {
+    width: auto;
+  }
 }
 
-@media (max-width: 640px) {
+@media (min-width: 900px) {
+  .app-header,
   .toolbar-actions {
-    flex-direction: column;
+    flex-direction: row;
   }
 
-  .main-nav {
-    grid-template-columns: 1fr;
+  .app-header,
+  .toolbar-grid {
+    justify-content: space-between;
   }
 }
 </style>

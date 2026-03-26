@@ -163,7 +163,8 @@ onBeforeUnmount(() => {
 
 .chart-header {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  justify-content: flex-start;
   gap: 1rem;
   align-items: flex-start;
 }
@@ -183,17 +184,18 @@ onBeforeUnmount(() => {
 
 .chart-canvas-shell {
   position: relative;
-  min-height: 260px;
+  min-height: 220px;
   margin-top: 1rem;
 }
 
-@media (max-width: 640px) {
+@media (min-width: 640px) {
   .chart-header {
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
   }
 
   .chart-canvas-shell {
-    min-height: 220px;
+    min-height: 260px;
   }
 }
 </style>

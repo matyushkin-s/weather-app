@@ -120,8 +120,16 @@ const { items, isLoading, mode, hasFavorites } = useFavoriteWeather(favorites, l
 .favorites-header,
 .favorite-actions,
 .summary-row {
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 1rem;
+}
+
+.favorite-actions {
+  width: 100%;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .favorites-title {
@@ -154,22 +162,13 @@ const { items, isLoading, mode, hasFavorites } = useFavoriteWeather(favorites, l
 }
 
 .summary-row {
-  align-items: center;
+  align-items: flex-start;
 }
 
 .location-title {
   font-size: clamp(1.3rem, 2vw, 1.75rem);
   font-weight: 700;
   color: var(--color-heading);
-}
-
-.weather-description {
-  text-transform: capitalize;
-}
-
-.weather-temp-shell {
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .weather-icon {
@@ -181,25 +180,6 @@ const { items, isLoading, mode, hasFavorites } = useFavoriteWeather(favorites, l
   font-size: clamp(1.8rem, 3vw, 2.8rem);
   line-height: 1;
   color: var(--color-heading);
-}
-
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.metric-card {
-  border-radius: 20px;
-  background: var(--surface-muted);
-  padding: 1rem;
-}
-
-.metric-value {
-  display: block;
-  margin-top: 0.35rem;
-  color: var(--color-heading);
-  font-weight: 700;
 }
 
 .favorites-state {
@@ -214,34 +194,20 @@ const { items, isLoading, mode, hasFavorites } = useFavoriteWeather(favorites, l
   text-align: center;
 }
 
-.loader {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 4px solid var(--accent-soft);
-  border-top-color: var(--accent-color);
-  animation: spin 0.75s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .error-state {
   color: var(--danger-color);
 }
 
-@media (max-width: 720px) {
+@media (min-width: 720px) {
   .favorites-header,
   .summary-row {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .metrics-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 </style>

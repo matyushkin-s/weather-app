@@ -237,23 +237,13 @@ async function refreshBlock(): Promise<void> {
   gap: 1rem;
 }
 
-.widget-badge {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent-color);
-  padding: 0.35rem 0.75rem;
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
 .widget-actions-inline {
   gap: 0.5rem;
 }
 
 .weather-summary {
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .eyebrow,
@@ -269,15 +259,6 @@ async function refreshBlock(): Promise<void> {
   color: var(--color-heading);
 }
 
-.weather-description {
-  text-transform: capitalize;
-}
-
-.weather-temp-shell {
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .weather-icon {
   width: 76px;
   height: 76px;
@@ -289,28 +270,13 @@ async function refreshBlock(): Promise<void> {
   color: var(--color-heading);
 }
 
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.metric-card {
-  border-radius: 20px;
-  background: var(--surface-muted);
-  padding: 1rem;
-}
-
 .metric-value {
-  display: block;
-  margin-top: 0.35rem;
-  color: var(--color-heading);
   font-size: 1.1rem;
-  font-weight: 700;
 }
 
 .mode-panel {
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 2px;
@@ -332,30 +298,15 @@ async function refreshBlock(): Promise<void> {
   color: var(--danger-color);
 }
 
-.loader {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 4px solid var(--accent-soft);
-  border-top-color: var(--accent-color);
-  animation: spin 0.75s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (max-width: 640px) {
+@media (min-width: 640px) {
   .weather-summary,
   .mode-panel {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
   }
 
   .metrics-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 </style>

@@ -63,9 +63,13 @@ function handleAddBlock(): void {
 
 .view-header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: stretch;
   gap: 1rem;
+}
+
+.view-header .button {
+  width: 100%;
 }
 
 .view-title {
@@ -90,13 +94,15 @@ function handleAddBlock(): void {
   gap: 1rem;
 }
 
-@media (max-width: 640px) {
+@media (min-width: 640px) {
   .view-header {
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
   }
 
   .view-header .button {
-    width: 100%;
+    width: auto;
   }
 }
 </style>

@@ -77,9 +77,13 @@ const emit = defineEmits<{
 
 .modal-actions {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column-reverse;
   gap: 0.75rem;
   margin-top: 1.5rem;
+}
+
+.modal-actions .button {
+  width: 100%;
 }
 
 .modal-fade-enter-active,
@@ -92,13 +96,14 @@ const emit = defineEmits<{
   opacity: 0;
 }
 
-@media (max-width: 480px) {
+@media (min-width: 481px) {
   .modal-actions {
-    flex-direction: column-reverse;
+    flex-direction: row;
+    justify-content: flex-end;
   }
 
   .modal-actions .button {
-    width: 100%;
+    width: auto;
   }
 }
 </style>
