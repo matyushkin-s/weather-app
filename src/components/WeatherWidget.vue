@@ -252,21 +252,6 @@ async function refreshBlock(): Promise<void> {
   gap: 0.5rem;
 }
 
-.icon-button {
-  min-width: 42px;
-  min-height: 42px;
-  border-radius: 14px;
-  border: 1px solid var(--color-border);
-  background: var(--surface-muted);
-  color: var(--color-text);
-  cursor: pointer;
-}
-
-.icon-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
-}
-
 .weather-summary {
   align-items: center;
 }
@@ -328,6 +313,7 @@ async function refreshBlock(): Promise<void> {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  margin-bottom: 2px;
 }
 
 .state-card {

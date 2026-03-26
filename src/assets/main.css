@@ -1,7 +1,7 @@
 @import './base.css';
 @import '../styles/app.css';
 
-#app {
+.weather-app {
   width: min(100%, 1200px);
   margin: 0 auto;
   padding: 24px clamp(16px, 3vw, 32px) 40px;
@@ -12,7 +12,7 @@
 }
 
 @media (max-width: 640px) {
-  #app {
+  .weather-app{
     padding-top: 16px;
     padding-bottom: 24px;
   }

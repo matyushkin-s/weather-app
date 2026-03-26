@@ -157,6 +157,10 @@ const shouldShowDropdown = computed(() => isOpen.value && (isLoading.value || su
   position: relative;
 }
 
+.autocomplete .field-label {
+  margin-bottom: 8px;
+}
+
 .search-shell {
   position: relative;
 }

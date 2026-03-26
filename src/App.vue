@@ -129,10 +129,17 @@ const { locale, theme, toggleTheme } = usePreferences()
   border-radius: 999px;
   color: var(--color-heading);
   background: rgba(255, 255, 255, 0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .nav-link.router-link-active {
   background: var(--surface-color);
+  box-shadow: var(--shadow-sm);
+  pointer-events: none;
+}
+
+.nav-link:hover {
+  transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
 
