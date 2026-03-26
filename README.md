@@ -30,6 +30,10 @@ See [Vite Configuration Reference](https://vite.dev/config/).
 npm install
 ```
 
+### Link on GitHub Pages
+
+`https://matyushkin-s.github.io/weather-app/`
+
 ### Compile and Hot-Reload for Development
 
 ```sh
