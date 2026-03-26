@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import { searchCities, toWeatherError } from '@/services/weatherService'
 import type { AppLocale, CityLocation } from '@/types/weather'
-import { translate } from '@/i18n'
 import { buildCityLabel } from '@/utils/weather'
 
 const props = defineProps<{
@@ -23,6 +23,7 @@ const isOpen = ref(false)
 const error = ref<string | null>(null)
 const skipNextSearch = ref(false)
 let requestId = 0
+const { t } = useI18n()
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -118,29 +119,29 @@ const shouldShowDropdown = computed(() => isOpen.value && (isLoading.value || su
 
 <template>
   <div class="autocomplete">
-    <label class="field-label" for="city-search">{{ translate(props.locale, 'searchPlaceholder') }}</label>
+    <label class="field-label" for="city-search">{{ t('searchPlaceholder') }}</label>
     <div class="search-shell">
       <input
         id="city-search"
         v-model="query"
         class="search-input"
         type="text"
-        :placeholder="translate(props.locale, 'searchPlaceholder')"
+        :placeholder="t('searchPlaceholder')"
         :disabled="props.disabled"
         autocomplete="off"
         @focus="handleFocus"
         @blur="handleBlur"
         @keydown.enter.prevent="handleEnter"
       />
-      <span v-if="isLoading" class="search-status">{{ translate(props.locale, 'loading') }}</span>
+      <span v-if="isLoading" class="search-status">{{ t('loading') }}</span>
     </div>
-    <p class="field-hint">{{ translate(props.locale, 'searchHint') }}</p>
+    <p class="field-hint">{{ t('searchHint') }}</p>
 
     <transition name="fade-slide">
       <ul v-if="shouldShowDropdown" class="suggestions" role="listbox">
         <li v-if="error" class="suggestion suggestion-error">{{ error }}</li>
         <li v-else-if="!isLoading && suggestions.length === 0" class="suggestion suggestion-empty">
-          {{ translate(props.locale, 'noResults') }}
+          {{ t('noResults') }}
         </li>
         <li v-for="item in suggestions" :key="`${item.lat}-${item.lon}`" class="suggestion-row">
           <button class="suggestion" type="button" @click="handleSelect(item)">

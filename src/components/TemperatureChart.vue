@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Chart, registerables, type ChartConfiguration } from 'chart.js'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import type { AppLocale, AppTheme, TemperaturePoint } from '@/types/weather'
-import { translate } from '@/i18n'
 
 Chart.register(...registerables)
 
@@ -17,11 +17,12 @@ const props = defineProps<{
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const isRendering = ref(false)
 let chart: Chart<'line'> | null = null
+const { t } = useI18n()
 
 const chartTitle = computed(() =>
   props.mode === 'day'
-    ? translate(props.locale, 'hourlyChart')
-    : translate(props.locale, 'weeklyChart'),
+    ? t('hourlyChart')
+    : t('weeklyChart'),
 )
 
 function destroyChart(): void {
@@ -138,14 +139,14 @@ onBeforeUnmount(() => {
       <div>
         <h4 class="chart-title">{{ chartTitle }}</h4>
         <p class="chart-caption">
-          {{ props.mode === 'day' ? translate(props.locale, 'byHours') : translate(props.locale, 'byDays') }}
+          {{ props.mode === 'day' ? t('byHours') : t('byDays') }}
         </p>
       </div>
-      <span v-if="isRendering" class="chart-loading">{{ translate(props.locale, 'chartLoading') }}</span>
+      <span v-if="isRendering" class="chart-loading">{{ t('chartLoading') }}</span>
     </div>
 
     <div v-if="props.points.length === 0" class="chart-empty">
-      {{ translate(props.locale, 'noResults') }}
+      {{ t('noResults') }}
     </div>
     <div v-else class="chart-canvas-shell">
       <canvas ref="canvasRef" aria-label="Temperature chart"></canvas>

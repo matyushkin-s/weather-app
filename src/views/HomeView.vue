@@ -1,21 +1,22 @@
 <script setup lang="ts">
 import { onMounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import WeatherWidget from '@/components/WeatherWidget.vue'
 import { usePreferences } from '@/composables/usePreferences'
 import { useWeatherDashboard } from '@/composables/useWeatherDashboard'
-import { translate } from '@/i18n'
 
 const { locale, theme } = usePreferences()
 const { blocks, canAddBlock, bootstrapMessage, addBlock, refreshAll, bootstrapFirstBlock } = useWeatherDashboard()
+const { t } = useI18n()
 
 onMounted(() => {
-  void bootstrapFirstBlock(locale.value, translate(locale.value, 'autoLocation'))
+  void bootstrapFirstBlock(locale.value, t('autoLocation'))
 })
 
 watch(locale, (value) => {
   if (bootstrapMessage.value) {
-    bootstrapMessage.value = translate(value, 'autoLocation')
+    bootstrapMessage.value = t('autoLocation')
   }
 
   void refreshAll(value)
@@ -30,17 +31,17 @@ function handleAddBlock(): void {
   <section class="view-shell">
     <header class="view-header">
       <div>
-        <h2 class="view-title">{{ translate(locale, 'dashboardTab') }}</h2>
-        <p class="view-description">{{ translate(locale, 'appSubtitle') }}</p>
+        <h2 class="view-title">{{ t('dashboardTab') }}</h2>
+        <p class="view-description">{{ t('appSubtitle') }}</p>
         <p v-if="bootstrapMessage" class="view-note">{{ bootstrapMessage }}</p>
       </div>
 
       <button class="button button-primary" type="button" :disabled="!canAddBlock" @click="handleAddBlock">
-        {{ translate(locale, 'addBlock') }}
+        {{ t('addBlock') }}
       </button>
     </header>
 
-    <p v-if="!canAddBlock" class="limit-note">{{ translate(locale, 'maxBlocksReached') }}</p>
+    <p v-if="!canAddBlock" class="limit-note">{{ t('maxBlocksReached') }}</p>
 
     <div class="widgets-grid">
       <WeatherWidget

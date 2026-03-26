@@ -1,5 +1,6 @@
 import { computed, ref, watch } from 'vue'
 
+import { i18n } from '@/i18n'
 import type { AppLocale, AppTheme, CityLocation } from '@/types/weather'
 import { getLocationKey } from '@/utils/weather'
 
@@ -38,6 +39,8 @@ const locale = ref<AppLocale>(readStorage<AppLocale>(LOCALE_STORAGE_KEY, 'en'))
 const theme = ref<AppTheme>(resolveInitialTheme())
 const favorites = ref<CityLocation[]>(readStorage<CityLocation[]>(FAVORITES_STORAGE_KEY, []))
 
+i18n.global.locale.value = locale.value
+
 function applyTheme(value: AppTheme): void {
   if (typeof document === 'undefined') {
     return
@@ -49,6 +52,8 @@ function applyTheme(value: AppTheme): void {
 applyTheme(theme.value)
 
 watch(locale, (value) => {
+  i18n.global.locale.value = value
+
   if (typeof window !== 'undefined') {
     window.localStorage.setItem(LOCALE_STORAGE_KEY, JSON.stringify(value))
   }

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import { usePreferences } from '@/composables/usePreferences'
 import { useWeatherDashboard } from '@/composables/useWeatherDashboard'
 import type { AppLocale, AppTheme, WeatherBlockState } from '@/types/weather'
-import { translate } from '@/i18n'
 import { buildCityLabel, formatUpdatedAt, formatWind, getModePoints, getWeatherIconUrl } from '@/utils/weather'
 
 import CityAutocomplete from './CityAutocomplete.vue'
@@ -20,6 +20,7 @@ const props = defineProps<{
 
 const { toggleFavorite, isFavorite } = usePreferences()
 const { loadWeatherForBlock, removeBlock, setMode } = useWeatherDashboard()
+const { t } = useI18n()
 
 const deleteModalOpen = ref(false)
 const favoritesLimitModalOpen = ref(false)
@@ -72,13 +73,13 @@ async function refreshBlock(): Promise<void> {
 <template>
   <article class="widget-card">
     <div class="widget-topbar">
-      <span class="widget-badge">{{ translate(props.locale, 'widget') }}</span>
+      <span class="widget-badge">{{ t('widget') }}</span>
       <div class="widget-actions-inline">
         <button
           class="icon-button"
           type="button"
           :aria-pressed="isBlockFavorite"
-          :title="isBlockFavorite ? translate(props.locale, 'favoriteRemove') : translate(props.locale, 'favoriteAdd')"
+          :title="isBlockFavorite ? t('favoriteRemove') : t('favoriteAdd')"
           @click="handleFavoriteToggle"
         >
           {{ isBlockFavorite ? '★' : '☆' }}
@@ -86,7 +87,7 @@ async function refreshBlock(): Promise<void> {
         <button
           class="icon-button"
           type="button"
-          :title="translate(props.locale, 'refresh')"
+          :title="t('refresh')"
           @click="refreshBlock"
         >
           ↻
@@ -95,7 +96,7 @@ async function refreshBlock(): Promise<void> {
           class="icon-button"
           type="button"
           :disabled="!props.canDelete"
-          :title="props.canDelete ? translate(props.locale, 'deleteBlock') : translate(props.locale, 'cannotDeleteLast')"
+          :title="props.canDelete ? t('deleteBlock') : t('cannotDeleteLast')"
           @click="deleteModalOpen = true"
         >
           ✕
@@ -112,24 +113,24 @@ async function refreshBlock(): Promise<void> {
 
     <div v-if="props.block.isLoading" class="state-card">
       <div class="loader"></div>
-      <p>{{ translate(props.locale, 'loading') }}</p>
+        <p>{{ t('loading') }}</p>
     </div>
 
     <div v-else-if="props.block.error" class="state-card state-card-error">
       <p>{{ props.block.error }}</p>
       <button class="button button-primary" type="button" @click="refreshBlock">
-        {{ translate(props.locale, 'refresh') }}
+        {{ t('refresh') }}
       </button>
     </div>
 
     <div v-else-if="props.block.weather" class="widget-content">
       <section class="weather-summary">
         <div>
-          <p class="eyebrow">{{ translate(props.locale, 'currentConditions') }}</p>
+          <p class="eyebrow">{{ t('currentConditions') }}</p>
           <h3 class="location-title">{{ buildCityLabel(props.block.weather.location) }}</h3>
           <p class="weather-description">{{ props.block.weather.current.description }}</p>
           <p class="update-text">
-            {{ translate(props.locale, 'updatedAt') }}:
+            {{ t('updatedAt') }}:
             {{ formatUpdatedAt(props.block.weather.current.timestamp, props.block.weather.timezoneOffset, props.locale) }}
           </p>
         </div>
@@ -146,25 +147,25 @@ async function refreshBlock(): Promise<void> {
 
       <section class="metrics-grid">
         <div class="metric-card">
-          <span class="metric-label">{{ translate(props.locale, 'humidity') }}</span>
+          <span class="metric-label">{{ t('humidity') }}</span>
           <strong class="metric-value">{{ props.block.weather.current.humidity }}%</strong>
         </div>
         <div class="metric-card">
-          <span class="metric-label">{{ translate(props.locale, 'wind') }}</span>
+          <span class="metric-label">{{ t('wind') }}</span>
           <strong class="metric-value">{{ formatWind(props.block.weather.current.windSpeed, props.locale) }}</strong>
         </div>
       </section>
 
       <section class="mode-panel">
-        <span class="field-label">{{ translate(props.locale, 'feelsLike') }}</span>
-        <div class="segmented-control" role="tablist" :aria-label="translate(props.locale, 'feelsLike')">
+        <span class="field-label">{{ t('feelsLike') }}</span>
+        <div class="segmented-control" role="tablist" :aria-label="t('feelsLike')">
           <button
             class="segmented-item"
             :class="{ 'segmented-item-active': props.block.mode === 'day' }"
             type="button"
             @click="setMode(props.block.id, 'day')"
           >
-            {{ translate(props.locale, 'day') }}
+            {{ t('day') }}
           </button>
           <button
             class="segmented-item"
@@ -172,7 +173,7 @@ async function refreshBlock(): Promise<void> {
             type="button"
             @click="setMode(props.block.id, 'week')"
           >
-            {{ translate(props.locale, 'week') }}
+            {{ t('week') }}
           </button>
         </div>
       </section>
@@ -186,15 +187,15 @@ async function refreshBlock(): Promise<void> {
     </div>
 
     <div v-else class="state-card state-card-empty">
-      <p>{{ translate(props.locale, 'searchPrompt') }}</p>
+      <p>{{ t('searchPrompt') }}</p>
     </div>
 
     <ConfirmModal
       :open="deleteModalOpen"
-      :title="translate(props.locale, 'confirmDeleteTitle')"
-      :description="translate(props.locale, 'confirmDeleteText')"
-      :confirm-label="translate(props.locale, 'confirm')"
-      :cancel-label="translate(props.locale, 'cancel')"
+      :title="t('confirmDeleteTitle')"
+      :description="t('confirmDeleteText')"
+      :confirm-label="t('confirm')"
+      :cancel-label="t('cancel')"
       tone="danger"
       @confirm="confirmDelete"
       @cancel="deleteModalOpen = false"
@@ -202,10 +203,10 @@ async function refreshBlock(): Promise<void> {
 
     <ConfirmModal
       :open="favoritesLimitModalOpen"
-      :title="translate(props.locale, 'favoritesLimitTitle')"
-      :description="translate(props.locale, 'favoritesLimitText')"
-      :confirm-label="translate(props.locale, 'confirm')"
-      :cancel-label="translate(props.locale, 'cancel')"
+      :title="t('favoritesLimitTitle')"
+      :description="t('favoritesLimitText')"
+      :confirm-label="t('confirm')"
+      :cancel-label="t('cancel')"
       @confirm="favoritesLimitModalOpen = false"
       @cancel="favoritesLimitModalOpen = false"
     />

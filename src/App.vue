@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
 import { usePreferences } from '@/composables/usePreferences'
 import { hasWeatherApiKey } from '@/services/weatherService'
-import { localeLabels, translate } from '@/i18n'
+import { localeLabels } from '@/i18n'
 
 const { locale, theme, toggleTheme } = usePreferences()
+const { t } = useI18n()
 </script>
 
 <template>
@@ -13,22 +15,22 @@ const { locale, theme, toggleTheme } = usePreferences()
     <header class="app-header">
       <div class="hero-copy">
         <p class="hero-badge">OpenWeather + Vue 3</p>
-        <h1 class="app-title">{{ translate(locale, 'appTitle') }}</h1>
-        <p class="app-subtitle">{{ translate(locale, 'appSubtitle') }}</p>
+        <h1 class="app-title">{{ t('appTitle') }}</h1>
+        <p class="app-subtitle">{{ t('appSubtitle') }}</p>
       </div>
 
       <div class="toolbar-grid">
         <nav class="main-nav" aria-label="Primary navigation">
-          <RouterLink class="nav-link" to="/">{{ translate(locale, 'dashboardTab') }}</RouterLink>
-          <RouterLink class="nav-link" to="/favorites">{{ translate(locale, 'favoritesTab') }}</RouterLink>
+          <RouterLink class="nav-link" to="/">{{ t('dashboardTab') }}</RouterLink>
+          <RouterLink class="nav-link" to="/favorites">{{ t('favoritesTab') }}</RouterLink>
         </nav>
 
         <div class="toolbar-actions">
           <button class="button button-secondary" type="button" @click="toggleTheme">
-            {{ translate(locale, 'theme') }}: {{ translate(locale, theme) }}
+            {{ t('theme') }}: {{ t(theme) }}
           </button>
 
-          <div class="segmented-control" :aria-label="translate(locale, 'language')">
+          <div class="segmented-control" :aria-label="t('language')">
             <button
               v-for="item in (['en', 'uk'] as const)"
               :key="item"
@@ -45,7 +47,7 @@ const { locale, theme, toggleTheme } = usePreferences()
     </header>
 
     <div v-if="!hasWeatherApiKey()" class="notice-card notice-warning">
-      {{ translate(locale, 'apiKeyMissing') }}
+      {{ t('apiKeyMissing') }}
     </div>
 
     <main class="page-content">

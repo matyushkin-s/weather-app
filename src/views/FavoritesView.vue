@@ -1,30 +1,32 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
 import TemperatureChart from '@/components/TemperatureChart.vue'
 import { useFavoriteWeather } from '@/composables/useFavoriteWeather'
 import { usePreferences } from '@/composables/usePreferences'
-import { translate } from '@/i18n'
 import { buildCityLabel, formatUpdatedAt, formatWind, getModePoints, getWeatherIconUrl } from '@/utils/weather'
 
 const { favorites, locale, theme, removeFavorite } = usePreferences()
 const { items, isLoading, mode, hasFavorites } = useFavoriteWeather(favorites, locale)
+const { t } = useI18n()
 </script>
 
 <template>
   <section class="favorites-shell">
     <header class="favorites-header">
       <div>
-        <h2 class="favorites-title">{{ translate(locale, 'favoritesTitle') }}</h2>
-        <p class="favorites-description">{{ translate(locale, 'favoritesSubtitle') }}</p>
+        <h2 class="favorites-title">{{ t('favoritesTitle') }}</h2>
+        <p class="favorites-description">{{ t('favoritesSubtitle') }}</p>
       </div>
 
-      <div v-if="hasFavorites" class="segmented-control" role="tablist" :aria-label="translate(locale, 'feelsLike')">
+      <div v-if="hasFavorites" class="segmented-control" role="tablist" :aria-label="t('feelsLike')">
         <button
           class="segmented-item"
           :class="{ 'segmented-item-active': mode === 'day' }"
           type="button"
           @click="mode = 'day'"
         >
-          {{ translate(locale, 'day') }}
+          {{ t('day') }}
         </button>
         <button
           class="segmented-item"
@@ -32,25 +34,25 @@ const { items, isLoading, mode, hasFavorites } = useFavoriteWeather(favorites, l
           type="button"
           @click="mode = 'week'"
         >
-          {{ translate(locale, 'week') }}
+          {{ t('week') }}
         </button>
       </div>
     </header>
 
     <div v-if="isLoading" class="favorites-state">
       <div class="loader"></div>
-      <p>{{ translate(locale, 'loading') }}</p>
+      <p>{{ t('loading') }}</p>
     </div>
 
     <div v-else-if="!hasFavorites" class="favorites-state empty-state">
-      <p>{{ translate(locale, 'favoritesEmpty') }}</p>
+      <p>{{ t('favoritesEmpty') }}</p>
     </div>
 
     <div v-else class="favorites-grid">
       <article v-for="item in items" :key="`${item.location.lat}-${item.location.lon}`" class="favorite-card">
         <div class="favorite-actions">
-          <span class="widget-badge">★ {{ translate(locale, 'favoritesTab') }}</span>
-          <button class="icon-button" type="button" :title="translate(locale, 'favoriteRemove')" @click="removeFavorite(item.location)">
+          <span class="widget-badge">★ {{ t('favoritesTab') }}</span>
+          <button class="icon-button" type="button" :title="t('favoriteRemove')" @click="removeFavorite(item.location)">
             ✕
           </button>
         </div>
@@ -62,11 +64,11 @@ const { items, isLoading, mode, hasFavorites } = useFavoriteWeather(favorites, l
         <template v-else-if="item.weather">
           <section class="summary-row">
             <div>
-              <p class="eyebrow">{{ translate(locale, 'currentConditions') }}</p>
+              <p class="eyebrow">{{ t('currentConditions') }}</p>
               <h3 class="location-title">{{ buildCityLabel(item.weather.location) }}</h3>
               <p class="weather-description">{{ item.weather.current.description }}</p>
               <p class="update-text">
-                {{ translate(locale, 'updatedAt') }}:
+                {{ t('updatedAt') }}:
                 {{ formatUpdatedAt(item.weather.current.timestamp, item.weather.timezoneOffset, locale) }}
               </p>
             </div>
@@ -83,11 +85,11 @@ const { items, isLoading, mode, hasFavorites } = useFavoriteWeather(favorites, l
 
           <section class="metrics-grid">
             <div class="metric-card">
-              <span class="metric-label">{{ translate(locale, 'humidity') }}</span>
+              <span class="metric-label">{{ t('humidity') }}</span>
               <strong class="metric-value">{{ item.weather.current.humidity }}%</strong>
             </div>
             <div class="metric-card">
-              <span class="metric-label">{{ translate(locale, 'wind') }}</span>
+              <span class="metric-label">{{ t('wind') }}</span>
               <strong class="metric-value">{{ formatWind(item.weather.current.windSpeed, locale) }}</strong>
             </div>
           </section>

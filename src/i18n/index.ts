@@ -1,3 +1,5 @@
+import { createI18n } from 'vue-i18n'
+
 import type { AppLocale } from '@/types/weather'
 
 export const localeLabels: Record<AppLocale, string> = {
@@ -10,7 +12,7 @@ export const apiLanguageByLocale: Record<AppLocale, string> = {
   uk: 'uk',
 }
 
-const messages = {
+const messagesByKey = {
   appTitle: {
     en: 'Weather App',
     uk: 'Додаток прогнозу погоди',
@@ -193,10 +195,27 @@ const messages = {
   },
 } as const
 
-type MessageKey = keyof typeof messages
+export type MessageKey = keyof typeof messagesByKey
+
+function toLocaleMessages(locale: AppLocale): Record<MessageKey, string> {
+  return Object.fromEntries(
+    Object.entries(messagesByKey).map(([key, value]) => [key, value[locale]]),
+  ) as Record<MessageKey, string>
+}
+
+export const i18n = createI18n({
+  legacy: false,
+  locale: 'en',
+  fallbackLocale: 'en',
+  messages: {
+    en: toLocaleMessages('en'),
+    uk: toLocaleMessages('uk'),
+  },
+})
 
 export function translate(locale: AppLocale, key: MessageKey): string {
-  return messages[key][locale]
+  const localizedMessages = i18n.global.getLocaleMessage(locale) as Partial<Record<MessageKey, string>>
+  return localizedMessages[key] ?? i18n.global.t(key)
 }
 
 export function formatLocale(locale: AppLocale): string {
