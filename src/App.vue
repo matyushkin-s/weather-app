@@ -11,7 +11,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div class="app-shell weather-app">
+  <div class="app-shell">
     <header class="app-header">
       <div class="hero-copy">
         <p class="hero-badge">OpenWeather + Vue 3</p>

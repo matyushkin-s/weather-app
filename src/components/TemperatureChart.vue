@@ -123,6 +123,7 @@ async function renderChart(): Promise<void> {
 
 onMounted(() => {
   void renderChart()
+  window.addEventListener("resize", renderChart);
 })
 
 watch(
@@ -134,6 +135,7 @@ watch(
 )
 
 onBeforeUnmount(() => {
+  window.removeEventListener("resize", renderChart);
   destroyChart()
 })
 </script>
@@ -192,6 +194,13 @@ onBeforeUnmount(() => {
   position: relative;
   min-height: 220px;
   margin-top: 1rem;
+  max-width: calc(100vw - (32px + 20px) * 2);
+}
+
+@media (min-width: 420px) {
+  .chart-canvas-shell {
+    max-width: 100%;
+  }
 }
 
 @media (min-width: 640px) {
