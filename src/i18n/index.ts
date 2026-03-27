@@ -194,8 +194,8 @@ const messagesByKey = {
     uk: 'Віджет',
   },
   byHours: {
-    en: '3-hour forecast points for today',
-    uk: 'Точки прогнозу кожні 3 години на сьогодні',
+    en: 'Hourly forecast points for today',
+    uk: 'Погодинні точки прогнозу на сьогодні',
   },
   byDays: {
     en: 'Average temperature for each forecast day',

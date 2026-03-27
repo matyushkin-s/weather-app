@@ -6,27 +6,32 @@ import ConfirmModal from '@/components/ConfirmModal.vue'
 import WeatherWidget from '@/components/WeatherWidget.vue'
 import { useFavoriteWeather } from '@/composables/useFavoriteWeather'
 import { usePreferences } from '@/composables/usePreferences'
-import type { CityLocation, WeatherBlockState } from '@/types/weather'
+import type { CityLocation, ForecastMode, WeatherBlockState } from '@/types/weather'
 import { getLocationKey } from '@/utils/weather'
 
 const { favorites, locale, theme, removeFavorite } = usePreferences()
-const { items, isLoading, mode, hasFavorites, reload, reloadLocation } = useFavoriteWeather(favorites, locale)
+const { items, isLoading, hasFavorites, reload } = useFavoriteWeather(favorites, locale)
 const { t } = useI18n()
 
 const pendingRemoval = ref<CityLocation | null>(null)
+const blockModes = ref<Record<string, ForecastMode>>({})
 
 const favoriteBlocks = computed<WeatherBlockState[]>(() =>
   items.value.map((item) => ({
     id: `favorite-${getLocationKey(item.location)}`,
     location: item.location,
     weather: item.weather,
-    isLoading: isLoading.value,
+    isLoading: item.isLoading,
     error: item.error,
-    mode: mode.value,
+    mode: blockModes.value[`favorite-${getLocationKey(item.location)}`] ?? 'day',
   })),
 )
 
-function requestRemoveFavorite(location: CityLocation): void {
+function requestRemoveFavorite(location: CityLocation | null): void {
+  if (!location) {
+    return
+  }
+
   pendingRemoval.value = location
 }
 
@@ -42,17 +47,11 @@ function confirmRemoveFavorite(): void {
   pendingRemoval.value = null
 }
 
-async function handleReload(location?: CityLocation): Promise<void> {
-  if (location) {
-    await reloadLocation(location)
-    return
+function handleModeChange(blockId: string, nextMode: ForecastMode): void {
+  blockModes.value = {
+    ...blockModes.value,
+    [blockId]: nextMode,
   }
-
-  await reload()
-}
-
-function handleModeChange(nextMode: 'day' | 'week'): void {
-  mode.value = nextMode
 }
 </script>
 
@@ -62,27 +61,6 @@ function handleModeChange(nextMode: 'day' | 'week'): void {
       <div>
         <h2 class="favorites-title">{{ t('favoritesTitle') }}</h2>
         <p class="favorites-description">{{ t('favoritesSubtitle') }}</p>
-      </div>
-
-      <div v-if="hasFavorites" class="favorites-controls">
-        <div class="segmented-control" role="tablist" :aria-label="t('feelsLike')">
-          <button
-            class="segmented-item"
-            :class="{ 'segmented-item-active': mode === 'day' }"
-            type="button"
-            @click="mode = 'day'"
-          >
-            {{ t('day') }}
-          </button>
-          <button
-            class="segmented-item"
-            :class="{ 'segmented-item-active': mode === 'week' }"
-            type="button"
-            @click="mode = 'week'"
-          >
-            {{ t('week') }}
-          </button>
-        </div>
       </div>
     </header>
 
@@ -106,9 +84,9 @@ function handleModeChange(nextMode: 'day' | 'week'): void {
         :disable-search="true"
         :disable-favorite-toggle="true"
         :on-delete="block.location ? () => requestRemoveFavorite(block.location) : null"
-        :forced-mode="mode"
-        @mode-change="handleModeChange"
-        @refresh="handleReload"
+        :forced-mode="block.mode"
+        @mode-change="(nextMode) => handleModeChange(block.id, nextMode)"
+        :reload="reload"
       />
     </div>
 
@@ -129,11 +107,6 @@ function handleModeChange(nextMode: 'day' | 'week'): void {
 .favorites-shell {
   display: grid;
   gap: 1.25rem;
-}
-
-.favorites-controls {
-  display: grid;
-  gap: 0.75rem;
 }
 
 .favorites-header {
@@ -175,12 +148,6 @@ function handleModeChange(nextMode: 'day' | 'week'): void {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-  }
-
-  .favorites-controls {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
   }
 }
 </style>

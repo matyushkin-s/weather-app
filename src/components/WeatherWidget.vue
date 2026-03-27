@@ -20,11 +20,11 @@ const props = defineProps<{
   disableFavoriteToggle?: boolean
   onDelete?: (() => void) | null
   forcedMode?: ForecastMode | null
+  reload?: (location: NonNullable<WeatherBlockState['location']>) => Promise<void>
 }>()
 
 const emit = defineEmits<{
   modeChange: [mode: ForecastMode]
-  refresh: [location: NonNullable<WeatherBlockState['location']>]
 }>()
 
 const { toggleFavorite, isFavorite } = usePreferences()
@@ -82,7 +82,11 @@ async function refreshBlock(): Promise<void> {
     return
   }
 
-  await loadWeatherForBlock(props.block.id, props.block.location, props.locale)
+  if (props.reload) {
+    await props.reload(props.block.location)
+  } else {
+    await loadWeatherForBlock(props.block.id, props.block.location, props.locale)
+  }
 }
 
 function handleModeChange(mode: ForecastMode): void {
@@ -112,7 +116,6 @@ function handleModeChange(mode: ForecastMode): void {
           {{ isBlockFavorite ? '★' : '☆' }}
         </button>
         <button
-          v-if="!props.disableFavoriteToggle"
           class="icon-button"
           type="button"
           :title="t('refresh')"

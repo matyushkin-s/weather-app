@@ -29,7 +29,7 @@ export function useFavoriteWeather(favorites: Ref<CityLocation[]>, locale: Ref<A
     }
   }
 
-  async function reload(): Promise<void> {
+  async function reloadAll(): Promise<void> {
     if (favorites.value.length === 0) {
       isLoading.value = false
       items.value = []
@@ -42,24 +42,44 @@ export function useFavoriteWeather(favorites: Ref<CityLocation[]>, locale: Ref<A
     isLoading.value = false
   }
 
-  async function reloadLocation(location: CityLocation): Promise<void> {
-    const locationKey = getLocationKey(location)
-    const targetIndex = items.value.findIndex((item) => getLocationKey(item.location) === locationKey)
-
-    const refreshedItem = await fetchItem(location)
-
-    if (targetIndex === -1) {
-      items.value = [...items.value, refreshedItem]
+  async function reload(location?: CityLocation): Promise<void> {
+    if (!location) {
+      await reloadAll()
       return
     }
 
+    const locationKey = getLocationKey(location)
+    const index = items.value.findIndex((item) => getLocationKey(item.location) === locationKey)
+
+    if (index === -1) {
+      const fetched = await fetchItem(location)
+      items.value = [...items.value, fetched]
+      return
+    }
+
+    const current = items.value[index]
+    if (!current) {
+      return
+    }
+
+    const loadingItem: FavoriteWeatherItem = {
+      ...current,
+      isLoading: true,
+      error: null,
+    }
+
     const nextItems = [...items.value]
-    nextItems[targetIndex] = refreshedItem
+    nextItems[index] = loadingItem
     items.value = nextItems
+
+    const fetched = await fetchItem(location)
+    const updatedItems = [...items.value]
+    updatedItems[index] = fetched
+    items.value = updatedItems
   }
 
   watch([favorites, locale], () => {
-    void reload()
+    void reloadAll()
   }, { immediate: true, deep: true })
 
   const hasFavorites = computed(() => favorites.value.length > 0)
@@ -70,6 +90,5 @@ export function useFavoriteWeather(favorites: Ref<CityLocation[]>, locale: Ref<A
     mode,
     hasFavorites,
     reload,
-    reloadLocation,
   }
 }

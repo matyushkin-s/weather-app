@@ -25,6 +25,11 @@ const chartTitle = computed(() =>
     : t('weeklyChart'),
 )
 
+function formatChartTemperature(value: number): string {
+  const rounded = value.toFixed(1)
+  return rounded.endsWith('.0') ? rounded.slice(0, -2) : rounded
+}
+
 function destroyChart(): void {
   if (chart) {
     chart.destroy()
@@ -85,7 +90,7 @@ async function renderChart(): Promise<void> {
         },
         tooltip: {
           callbacks: {
-            label: (context) => `${context.parsed.y}°C`,
+            label: (context) => `${formatChartTemperature(context.parsed.y)}°C`,
           },
         },
       },
@@ -102,7 +107,7 @@ async function renderChart(): Promise<void> {
         y: {
           ticks: {
             color: colors.label,
-            callback: (value) => `${value}°`,
+            callback: (value) => `${formatChartTemperature(Number(value))}°`,
           },
           grid: {
             color: colors.grid,
