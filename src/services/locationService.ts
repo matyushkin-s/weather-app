@@ -16,12 +16,21 @@ export async function detectCityByIp(locale: AppLocale): Promise<CityLocation | 
       return null
     }
 
-    const [lat, lon] = response.data.loc.split(',').map(Number)
+    const [latRaw, lonRaw] = response.data.loc.split(',').map((value) => Number(value.trim()))
+
+    if (latRaw === undefined || lonRaw === undefined) {
+      return null
+    }
+
+    if (!Number.isFinite(latRaw) || !Number.isFinite(lonRaw)) {
+      return null
+    }
+
     return {
       name: response.data.city,
       country: response.data.country,
-      lat: lat,
-      lon: lon,
+      lat: latRaw,
+      lon: lonRaw,
     }
   } catch {
     throw new Error(translate(locale, 'genericError'))

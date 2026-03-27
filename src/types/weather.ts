@@ -3,8 +3,8 @@ export type AppTheme = 'light' | 'dark'
 export type ForecastMode = 'day' | 'week'
 
 export interface Coordinates {
-  lat: number | undefined
-  lon: number | undefined
+  lat: number
+  lon: number
 }
 
 export interface CityLocation extends Coordinates {

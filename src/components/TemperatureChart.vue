@@ -90,7 +90,7 @@ async function renderChart(): Promise<void> {
         },
         tooltip: {
           callbacks: {
-            label: (context) => `${formatChartTemperature(context.parsed.y)}°C`,
+            label: (context) => `${formatChartTemperature(Number(context.parsed.y ?? 0))}°C`,
           },
         },
       },
