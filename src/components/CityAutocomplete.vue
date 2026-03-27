@@ -55,7 +55,14 @@ const debouncedFetch = debounce(fetchSuggestions, 400)
 watch(
   () => props.selectedLocation,
   (location) => {
+    debouncedFetch.cancel()
+    requestId += 1
+    skipNextSearch.value = true
     query.value = location ? buildCityLabel(location) : ''
+    suggestions.value = []
+    error.value = null
+    isLoading.value = false
+    isOpen.value = false
   },
 )
 
